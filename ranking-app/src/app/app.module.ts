@@ -1,10 +1,9 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
-import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ObjectListComponent } from './object-list/object-list.component';
 import { ProtocolComponent } from './protocol/protocol.component';
+import { AppRoutingModule } from './app-routing.module'; // Імпорт маршрутизації
 
 @NgModule({
   declarations: [
@@ -14,9 +13,9 @@ import { ProtocolComponent } from './protocol/protocol.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule  // Підключаємо маршрутизацію
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent]  // Основний компонент додатка
 })
 export class AppModule { }

@@ -1,10 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-protocol',
   templateUrl: './protocol.component.html',
-  styleUrl: './protocol.component.css'
+  styleUrls: ['./protocol.component.css']
 })
-export class ProtocolComponent {
+export class ProtocolComponent implements OnInit {
+  protocol: string[] = [];
 
+  ngOnInit() {
+    this.protocol = JSON.parse(localStorage.getItem('protocol') || '[]');
+  }
 }

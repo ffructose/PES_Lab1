@@ -1,1 +1,35 @@
-<p>object-list works!</p>
+<div class="container">
+  <h2>Інтерактивний список об'єктів</h2>
+
+  <!-- Завантаження CSV -->
+  <input type="file" (change)="onFileUpload($event)">
+
+  <!-- Список об'єктів з можливістю перетягування -->
+  <ul>
+    <li *ngFor="let obj of objects; let i = index"
+        draggable="true"
+        (dragstart)="onDragStart(i)"
+        (dragover)="onDragOver($event)"
+        (drop)="onDrop(i)">
+      {{ obj }}
+      <button (click)="removeObject(i)">Видалити</button>
+    </li>
+  </ul>
+
+  <!-- Додавання нового об'єкта -->
+  <input type="text" #newObject placeholder="Новий об'єкт">
+  <button (click)="addObject(newObject.value)">Додати об'єкт</button>
+
+  <!-- Матриця попарних порівнянь -->
+  <h3>Матриця попарних порівнянь</h3>
+  <table border="1">
+    <tr>
+      <th></th>
+      <th *ngFor="let obj of objects">{{ obj }}</th>
+    </tr>
+    <tr *ngFor="let row of comparisonMatrix; let i = index">
+      <td>{{ objects[i] }}</td>
+      <td *ngFor="let value of row">{{ value }}</td>
+    </tr>
+  </table>
+</div>
