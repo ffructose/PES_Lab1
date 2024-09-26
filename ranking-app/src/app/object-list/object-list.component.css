@@ -1,71 +1,105 @@
-/* Центрування контейнера і додавання відступів */
+/* Загальні стилі */
 .container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  h2 {
-    text-align: center;
-    color: #333;
-  }
-  
-  /* Список об'єктів */
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  ul li {
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #fff;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    cursor: grab;
-  }
-  
-  ul li:hover {
-    background-color: #f0f0f0;
-  }
-  
-  /* Кнопка видалення */
-  button {
-    background-color: #ff6b6b;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: #ff4b4b;
-  }
-  
-  /* Матриця попарних порівнянь */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  th, td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    text-align: center;
-  }
-  
-  /* Анімація для виділення змін */
-  .highlighted {
-    background-color: #ffff99; /* Ледь помітний жовтий */
-    transition: background-color 1s ease;
-  }
-  
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+h3 {
+  font-size: 20px;
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Список фільмів */
+.film-list {
+  width: 20%;
+}
+
+.film-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.film-list li {
+  background-color: #f8f8f8;
+  padding: 5px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.film-list li:hover {
+  background-color: #e8e8e8;
+}
+
+.film-list .remove-btn {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Матриця */
+.film-matrix {
+  width: 70%;
+}
+
+.film-matrix table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.film-matrix th, .film-matrix td {
+  padding: 5px;
+  text-align: center;
+}
+
+.film-matrix th {
+  background-color: #f0f0f0;
+}
+
+.film-matrix td {
+  background-color: #fff;
+}
+
+.film-matrix td:hover {
+  background-color: #ffffcc;
+}
+
+/* Поле для додавання фільмів */
+input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}

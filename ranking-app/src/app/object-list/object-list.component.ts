@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { StateService } from '../state.service';
 
 @Component({
@@ -6,7 +6,7 @@ import { StateService } from '../state.service';
   templateUrl: './object-list.component.html',
   styleUrls: ['./object-list.component.css']
 })
-export class ObjectListComponent implements OnInit {
+export class ObjectListComponent {
   objects: string[] = [];
   comparisonMatrix: number[][] = [];
   protocol: string[] = [];
@@ -20,12 +20,28 @@ export class ObjectListComponent implements OnInit {
     this.protocol = JSON.parse(localStorage.getItem('protocol') || '[]');
   }
 
+  // Метод для завантаження CSV-файлу
+  onFileUpload(event: any) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e: any) => {
+      const text = e.target.result;
+      this.objects = text.split('\n').filter((line: string) => line.trim() !== '');
+      this.updateMatrix();
+      this.stateService.setObjects(this.objects);
+      this.logAction('Завантажено файл');
+    };
+
+    reader.readAsText(file);
+  }
+
   // Додавання нового об'єкта
   addObject(newObject: string) {
     this.objects.push(newObject);
     this.stateService.setObjects(this.objects);
     this.updateMatrix();
-    this.logAction(`Додано новий об'єкт: ${newObject}`);
+    this.logAction(`Додано ${newObject}`);
   }
 
   // Видалення об'єкта
@@ -33,7 +49,7 @@ export class ObjectListComponent implements OnInit {
     const removedObject = this.objects.splice(index, 1);
     this.stateService.setObjects(this.objects);
     this.updateMatrix();
-    this.logAction(`Видалено об'єкт: ${removedObject}`);
+    this.logAction(`Видалено ${removedObject}`);
   }
 
   // Логування дій
@@ -70,7 +86,7 @@ export class ObjectListComponent implements OnInit {
       this.objects.splice(index, 0, draggedItem);
       this.stateService.setObjects(this.objects);
       this.updateMatrix();
-      this.logAction(`Перетягнуто об'єкт з позиції ${this.draggedItemIndex + 1} на ${index + 1}`);
+      this.logAction(`Перетягнуто "${draggedItem}" з позиції ${this.draggedItemIndex + 1} на ${index + 1}`);
     }
     this.draggedItemIndex = null;
   }
