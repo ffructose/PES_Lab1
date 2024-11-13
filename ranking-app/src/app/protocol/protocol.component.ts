@@ -11,4 +11,10 @@ export class ProtocolComponent implements OnInit {
   ngOnInit() {
     this.protocol = JSON.parse(localStorage.getItem('protocol') || '[]');
   }
+
+  // Метод для очищення протоколу
+  clearProtocol() {
+    this.protocol = [];
+    localStorage.removeItem('protocol'); // Видаляємо протокол із localStorage
+  }
 }
