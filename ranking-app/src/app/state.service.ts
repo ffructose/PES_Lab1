@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class StateService {
-  private objects: string[] = [];
+  private objects: { name: string, value: number }[] = [];
   private comparisonMatrix: number[][] = [];
 
   // Метод для отримання об'єктів
@@ -13,7 +13,7 @@ export class StateService {
   }
 
   // Метод для збереження об'єктів
-  setObjects(objects: string[]) {
+  setObjects(objects: { name: string, value: number }[]) {
     this.objects = objects;
     localStorage.setItem('objects', JSON.stringify(this.objects));  // Зберігаємо в localStorage
   }
