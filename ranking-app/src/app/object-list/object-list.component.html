@@ -10,40 +10,85 @@
   <input type="file" (change)="onFileUpload($event)">
   <button (click)="clearExperts()" class="cl-b">Очистити експертів</button>
 
-  <!-- Відображення експертів -->
-  <div *ngIf="experts.length > 0">
-    <div *ngFor="let expert of experts; let i = index" class="row expert-section">
-      
-      <!-- Ліва колонка: список -->
-      <div class="col film-list">
-        <h4>Список об'єктів для {{ expert.name }}</h4>
-        <ul>
-          <li *ngFor="let obj of expert.objects; let j = index" draggable="true" 
-              (dragstart)="onDragStart(i, j)" (dragover)="onDragOver($event)" 
-              (drop)="onDrop(i, j)">
-            {{ obj.name }}
-            <button class="remove-btn" (click)="removeObject(j, i)">×</button>
-          </li>
-        </ul>
-        <input type="text" #newObject placeholder="Новий об'єкт">
-        <button (click)="addObject(newObject.value)">Додати об'єкт</button>
-      </div>
+  <div class="main-container">
+    <!-- Ліва секція: Експерти -->
+    <div class="experts-container">
+      <!-- Відображення експертів -->
+      <div *ngIf="experts.length > 0" >
+        <div *ngFor="let expert of experts; let i = index" class="row expert-section">
+          <!-- Ліва колонка: список -->
+          <div class="col film-list">
+            <h4> {{ expert.name }}</h4>
+            <ul>
+              <li *ngFor="let obj of expert.objects; let j = index" draggable="true" (dragstart)="onDragStart(i, j)"
+                (dragover)="onDragOver($event)" (drop)="onDrop(i, j)">
+                {{ obj.name }}
+                <button class="remove-btn" (click)="removeObject(j, i)">×</button>
+              </li>
+            </ul>
+            <input type="text" #newObject placeholder="Новий об'єкт">
+            <button (click)="addObject(newObject.value)">Додати об'єкт</button>
+          </div>
 
-      <!-- Права колонка: матриця -->
-      <div class="col film-matrix">
-        <h4>Матриця попарних порівнянь для {{ expert.name }}</h4>
-        <table border="1">
-          <tr>
-            <th></th>
-            <th *ngFor="let obj of expert.sortedObjects">{{ obj.name }}</th>
-          </tr>
-          <tr *ngFor="let row of expert.matrix; let rowIndex = index">
-            <td>{{ expert.sortedObjects[rowIndex].name }}</td>
-            <td *ngFor="let value of row">{{ value }}</td>
-          </tr>
-        </table>
-      </div>
+          <!-- Права колонка: матриця -->
+          <div class="col film-matrix">
+            <h4>МПП </h4>
+            <table border="1">
+              <tr>
+                <th></th>
+                <th *ngFor="let obj of expert.sortedObjects">{{ obj.name }}</th>
+              </tr>
+              <tr *ngFor="let row of expert.matrix; let rowIndex = index">
+                <td>{{ expert.sortedObjects[rowIndex].name }}</td>
+                <td *ngFor="let value of row">{{ value }}</td>
+              </tr>
+            </table>
+          </div>
 
+          <!-- Таблиця векторів -->
+          <div class="col film-vectors">
+            <h4>Вектори </h4>
+            <table border="1">
+              <tr>
+                <th>Номери об'єктів</th>
+                <td *ngFor="let obj of objects">{{ obj.name }}</td>
+              </tr>
+              <tr>
+                <th>Ранжування</th>
+                <td *ngFor="let obj of expert.objects">{{ obj.name }}</td>
+              </tr>
+              <tr>
+                <th>Ранги</th>
+                <td *ngFor="let obj of expert.objects">{{ obj.value }}</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Таблиця для numVect і sum -->
+          <div class="col film-cook-distance">
+            <h4>Відстані Кука </h4>
+            <table border="1">
+              <tr *ngFor="let cookData of cookDistances[i]?.exp">
+                <td *ngFor="let num of cookData.numVect">{{ num.value }}</td>
+                <td style="background-color: yellow">{{ cookData.sum }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- Права секція -->
+  <div class="right-container">
+    <h4>Всі можливі перестановки</h4>
+    <table border="1">
+      <tr *ngFor="let permutation of allPossibleObjects">
+        <td *ngFor="let obj of permutation.objects">{{ obj.value }}</td>
+      </tr>
+    </table>
+
+
+  </div>
+  
 </div>

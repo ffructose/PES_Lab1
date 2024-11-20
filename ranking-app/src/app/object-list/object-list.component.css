@@ -28,10 +28,11 @@ h2, h3, h4 {
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
+  gap: 10px;
 }
 
-.film-list, .film-matrix {
-  flex: 1 1 45%;
+.film-list, .film-matrix, .film-vectors, .film-cook-distance {
+  flex: 1 1 30%;
   margin: 0 10px;
 }
 
@@ -114,6 +115,10 @@ table th {
 
 .expert-controls {
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
 
 .expert-controls button {
@@ -128,3 +133,86 @@ table th {
   margin-left: 10px;
   font-weight: bold;
 }
+
+/* Оформлення таблиці для векторів */
+.film-vectors table {
+  margin-bottom: 5px;
+  font-size: 14px;
+  background-color: #f9f9f9;
+}
+
+.film-vectors th {
+  background-color: #dcdcdc;
+}
+
+.film-vectors td {
+  font-weight: bold;
+  font-size: 16px
+}
+
+/* Оформлення таблиці відстаней Кука */
+.film-cook-distance table {
+  margin-top: 5px;
+  margin: 0px;
+  padding: 0px;
+}
+
+.all-possible table {
+  margin-top: 5px;
+  margin: 0px;
+  padding: 0px;
+}
+.all-possible td {
+  font-weight: bold;
+  padding: 1px;
+}
+
+.film-cook-distance td {
+  font-weight: bold;
+  padding: 1px;
+}
+
+.film-cook-distance td:last-child {
+  background-color: yellow;
+  font-weight: bold;
+  padding: 1px;
+}
+
+.main-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.experts-container {
+  flex: 3;
+}
+
+.right-container {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.right-container h4 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.right-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.right-container th, .right-container td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 5px;
+}
+
+
+
+

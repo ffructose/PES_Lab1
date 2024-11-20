@@ -8,6 +8,14 @@ import { StateService } from '../state.service';
 })
 export class ObjectListComponent {
   objects: { name: string, value: number }[] = [];
+  allPossibleObjects: { objects: { name: string, value: number }[] }[] = [];
+  cookDistances: {
+    exp: {
+      numVect: { value: number }[], // Вектор значень об'єктів
+      sum: number // Сума відстаней для експерта
+    }[]
+  }[] = [];
+
   experts: { name: string, objects: { name: string, value: number }[], sortedObjects: { name: string, value: number }[], matrix: number[][] }[] = [];
   numExperts: number = 1;
 
@@ -18,10 +26,14 @@ export class ObjectListComponent {
   constructor(private stateService: StateService) { }
 
   ngOnInit() {
-    this.objects = this.stateService.getObjects();
+    this.objects = this.stateService.getObjects().map((obj, index) => ({
+      ...obj,
+      value: index + 1 // Починаємо value з 1
+    }));
     this.protocol = JSON.parse(localStorage.getItem('protocol') || '[]');
     console.log(this.objects);
-
+    this.generateAllPermutationsForObjects();
+  
     const expertsData = this.stateService.getExpertsData();
     if (Object.keys(expertsData).length > 0) {
       // Якщо є збережені експерти, відновлюємо їх
@@ -36,8 +48,9 @@ export class ObjectListComponent {
       // Якщо експертів немає, ініціалізуємо стандартних
       this.initializeExperts();
     }
+    this.lab3();
   }
-
+  
   // Метод для завантаження CSV-файлу
   onFileUpload(event: any) {
     const file = event.target.files[0];
@@ -50,7 +63,7 @@ export class ObjectListComponent {
       // Оновлюємо глобальний список об'єктів
       this.objects = this.draft.map((name: string, index: number) => ({
         name: name.trim(),
-        value: index
+        value: index +1
       }));
 
       // Оновлюємо списки об'єктів, сортування та матриці для всіх експертів
@@ -73,7 +86,7 @@ export class ObjectListComponent {
 
   // Додавання нового об'єкта
   addObject(name: string) {
-    const value = this.objects.length;
+    const value = this.objects.length+1;
     const newObject = { name, value };
     this.objects.push(newObject);
 
@@ -86,7 +99,7 @@ export class ObjectListComponent {
 
     this.stateService.setObjects(this.objects);
     this.logAction(`Додано об'єкт: ${name}`);
-
+    this.generateAllPermutationsForObjects();
   }
 
 
@@ -111,6 +124,7 @@ export class ObjectListComponent {
 
     // Зберігаємо зміни
     this.stateService.setObjects(this.objects);
+    this.generateAllPermutationsForObjects();
 
     // Логування
     this.logAction(`Видалено об'єкт: ${removedObjectName}`);
@@ -201,6 +215,8 @@ export class ObjectListComponent {
     expert.matrix = newMatrix;
     this.stateService.setComparisonMatrix(expert.name, newMatrix);
     this.logAction(`Матрицю оновлено для експерта: ${this.experts[expertIndex].name}`);
+ 
+    this.lab3();
   }
 
   // Перетягування елемента (початок)
@@ -299,5 +315,89 @@ export class ObjectListComponent {
     }
   }
 
+  lab3() {
+    this.generateAllPermutationsForObjects();
+    this.cookDistance();
+  }
 
+  //1. я створюю для кожного відранжованого експертом списку -
+  // вектор якийсь там типу яку позицію займає обєкт в 
+  // ранговому списку кожного експерта.
+
+  // в мене цей вектор вже є, значення валью в обєкті
+
+  //2. створюю масив де є всі можливі варіанти перестановок обєктів.
+  generateAllPermutationsForObjects() {
+    const results: { objects: { name: string, value: number }[] }[] = [];
+  
+    const permute = (arr: { name: string, value: number }[], m: { name: string, value: number }[] = []) => {
+      if (arr.length === 0) {
+        results.push({ objects: [...m] }); // Додаємо одну з перестановок
+      } else {
+        for (let i = 0; i < arr.length; i++) {
+          const current = arr.slice();
+          const next = current.splice(i, 1);
+          permute(current.slice(), m.concat(next));
+        }
+      }
+    };
+  
+    permute(this.objects);
+  
+    // Унікалізуємо результати
+    const uniqueResults = results.filter(
+      (result, index, self) =>
+        index === self.findIndex((r) => JSON.stringify(r) === JSON.stringify(result))
+    );
+  
+    // Упевнюємося, що початковий список не дублюється
+    this.allPossibleObjects = uniqueResults.filter(
+      (result) =>
+        JSON.stringify(result.objects) !== JSON.stringify(this.objects)
+    );
+  
+    // Додаємо початковий список об'єктів на перше місце
+    this.allPossibleObjects.unshift({ objects: [...this.objects] });
+  }
+  
+
+  //3. Для кожного експерта знаходжу оцю відстань кука 
+  // на основі всіх можливих варіантів і створеного в 1му пункті вектора.
+  cookDistance() {
+    // Очищуємо поточний масив cookDistances
+    this.cookDistances = [];
+  
+    // Проходимося по всіх експертах
+    this.experts.forEach((expert) => {
+      const expData: { numVect: { value: number }[], sum: number }[] = [];
+  
+      // Проходимося по всіх перестановок об'єктів у allPossibleObjects
+      this.allPossibleObjects.forEach((permutation) => {
+        const numVect = permutation.objects.map((object, index) => {
+          const expertValue = expert.objects[index].value; // Беремо value з об'єкта експерта
+          const distance = Math.abs(object.value - expertValue); // Розрахунок |value - value експерта|
+          return { value: distance };
+        });
+  
+        // Підраховуємо суму елементів у numVect
+        const sum = numVect.reduce((acc, item) => acc + item.value, 0);
+  
+        // Додаємо дані про одну перестановку до експерта
+        expData.push({ numVect, sum });
+      });
+  
+      // Додаємо дані про експерта до cookDistances
+      this.cookDistances.push({ exp: expData });
+    });
+  
+    console.log('Cook Distances:', this.cookDistances);
+  }
+
+
+  //4. Для матриці ПП кожного експерта роблю вектор враховуючи лише 
+  // верхню праву частину якоїсь там скісної матриці. довжина має бути n*(N-1)/2
+
+
+
+  //5. знаходжу відстань хеммінга?
 }
