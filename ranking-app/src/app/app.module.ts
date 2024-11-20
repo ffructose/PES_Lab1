@@ -4,6 +4,7 @@ import { AppComponent } from './app.component';
 import { ObjectListComponent } from './object-list/object-list.component';
 import { ProtocolComponent } from './protocol/protocol.component';
 import { AppRoutingModule } from './app-routing.module'; // Імпорт маршрутизації
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -13,7 +14,8 @@ import { AppRoutingModule } from './app-routing.module'; // Імпорт мар�
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule  // Підключаємо маршрутизацію
+    AppRoutingModule,  // Підключаємо маршрутизацію
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]  // Основний компонент додатка

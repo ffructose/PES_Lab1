@@ -1,105 +1,113 @@
-/* Загальні стилі */
 .container {
-  padding: 20px;
   font-family: Arial, sans-serif;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-h2 {
+h2, h3, h4 {
   text-align: center;
-  margin-bottom: 30px;
-}
-
-h3 {
-  font-size: 20px;
-  text-align: left;
-  margin-bottom: 15px;
 }
 
 .row {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
-/* Список фільмів */
-.film-list {
-  width: 20%;
+.expert-count {
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.expert-section {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.film-list, .film-matrix {
+  flex: 1 1 45%;
+  margin: 0 10px;
 }
 
 .film-list ul {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
 }
 
 .film-list li {
-  background-color: #f8f8f8;
-  padding: 5px;
-  margin-bottom: 5px;
-  border-radius: 4px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  background-color: #f9f9f9;
+  cursor: pointer;
 }
 
 .film-list li:hover {
-  background-color: #e8e8e8;
+  background-color: #eaeaea;
 }
 
-.film-list .remove-btn {
-  background: none;
+.remove-btn {
+  background: #ff4d4d;
+  color: white;
   border: none;
-  color: red;
-  font-size: 20px;
+  border-radius: 50%;
   cursor: pointer;
+  padding: 2px 6px;
+  font-size: 14px;
 }
 
-/* Матриця */
-.film-matrix {
-  width: 70%;
+.remove-btn:hover {
+  background: #ff1a1a;
 }
 
-.film-matrix table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.film-matrix th, .film-matrix td {
-  padding: 5px;
-  text-align: center;
-}
-
-.film-matrix th {
-  background-color: #f0f0f0;
-}
-
-.film-matrix td {
-  background-color: #fff;
-}
-
-.film-matrix td:hover {
-  background-color: #ffffcc;
-}
-
-/* Поле для додавання фільмів */
-input[type="text"] {
-  width: 100%;
+input[type="text"], input[type="number"] {
+  width: calc(100% - 20px);
   padding: 8px;
-  margin-top: 10px;
   margin-bottom: 10px;
-  border-radius: 4px;
   border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
 }
 
 button {
-  padding: 8px 16px;
-  background-color: #007bff;
+  background-color: #4CAF50;
   color: white;
   border: none;
   border-radius: 4px;
+  padding: 8px 12px;
   cursor: pointer;
+  font-size: 16px;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #45a049;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 8px;
+}
+
+table th {
+  background-color: #f2f2f2;
+}
+
+.cl-b {
+  justify-self: center;
 }

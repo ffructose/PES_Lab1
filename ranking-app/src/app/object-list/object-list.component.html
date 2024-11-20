@@ -1,37 +1,48 @@
 <div class="container">
   <h2>Управління списком об'єктів і матрицею попарних порівнянь</h2>
 
-  <div class="row">
-    <div class="col film-list">
-      <h3>Список фільмів</h3>
-      <input type="file" (change)="onFileUpload($event)">
-      <ul>
-        <li *ngFor="let obj of objects; let i = index" draggable="true" (dragstart)="onDragStart(i)"
-          (dragover)="onDragOver($event)" (drop)="onDrop(i)">
-          {{ obj.name }}
-          <button class="remove-btn" (click)="removeObject(i)">×</button>
-        </li>
-      </ul>
+  <!-- Вибір кількості експертів -->
+  <div class="row expert-count">
+    <label for="expertCount">Кількість експертів:</label>
+    <input id="expertCount" type="number" [(ngModel)]="numExperts" (change)="updateExpertsCount(numExperts)" min="1">
+  </div>
+  <input type="file" (change)="onFileUpload($event)">
+  <button (click)="clearExperts()" class="cl-b">Очистити експертів</button>
 
-      <input type="text" #newObject placeholder="Новий фільм">
-      <button (click)="addObject(newObject.value)">Додати фільм</button>
+  <!-- Відображення експертів -->
+  <div *ngIf="experts.length > 0">
+    <div *ngFor="let expert of experts; let i = index" class="row expert-section">
+      
+      <!-- Ліва колонка: список -->
+      <div class="col film-list">
+        <h4>Список об'єктів для {{ expert.name }}</h4>
+        <ul>
+          <li *ngFor="let obj of expert.objects; let j = index" draggable="true" 
+              (dragstart)="onDragStart(i, j)" (dragover)="onDragOver($event)" 
+              (drop)="onDrop(i, j)">
+            {{ obj.name }}
+            <button class="remove-btn" (click)="removeObject(j)">×</button>
+          </li>
+        </ul>
+        <input type="text" #newObject placeholder="Новий об'єкт">
+        <button (click)="addObject(newObject.value)">Додати об'єкт</button>
+      </div>
+
+      <!-- Права колонка: матриця -->
+      <div class="col film-matrix">
+        <h4>Матриця попарних порівнянь для {{ expert.name }}</h4>
+        <table border="1">
+          <tr>
+            <th></th>
+            <th *ngFor="let obj of expert.sortedObjects">{{ obj.name }}</th>
+          </tr>
+          <tr *ngFor="let row of expert.matrix; let rowIndex = index">
+            <td>{{ expert.sortedObjects[rowIndex].name }}</td>
+            <td *ngFor="let value of row">{{ value }}</td>
+          </tr>
+        </table>
+      </div>
+
     </div>
-
-    <!-- Матриця попарних порівнянь -->
-    <div *ngIf="sortedObjects.length > 0" class="col film-matrix">
-      <h3>Матриця попарних порівнянь</h3>
-      <table border="1">
-        <tr>
-          <th></th>
-          <th *ngFor="let obj of sortedObjects">{{ obj.name }}</th>
-        </tr>
-        <tr *ngFor="let row of comparisonMatrix; let i = index">
-          <td>{{ sortedObjects[i]?.name }}</td>
-          <td *ngFor="let value of row">{{ value }}</td>
-        </tr>
-      </table>
-    </div>
-
-
   </div>
 </div>
