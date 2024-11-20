@@ -82,9 +82,10 @@ export class ObjectListComponent {
     });
 
     this.stateService.setObjects(this.objects);
-    this.logAction(`Додано об'єкт: ${name}`);
+    this.logAction(`Додано об'єкт: ${name}`); 
+    
   }
-
+ 
 
   // Видалення об'єкта
   removeObject(index: number) {
