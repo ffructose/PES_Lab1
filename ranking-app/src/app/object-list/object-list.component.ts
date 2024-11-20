@@ -42,17 +42,17 @@ export class ObjectListComponent {
   onFileUpload(event: any) {
     const file = event.target.files[0];
     const reader = new FileReader();
-  
+
     reader.onload = (e: any) => {
       const text = e.target.result;
       this.draft = text.split('\n').filter((line: string) => line.trim() !== '');
-  
+
       // Оновлюємо глобальний список об'єктів
       this.objects = this.draft.map((name: string, index: number) => ({
         name: name.trim(),
         value: index
       }));
-  
+
       // Оновлюємо списки об'єктів, сортування та матриці для всіх експертів
       this.experts.forEach((expert, index) => {
         expert.objects = [...this.objects]; // Замінюємо список об'єктів для експерта
@@ -60,14 +60,14 @@ export class ObjectListComponent {
         expert.matrix = this.createEmptyMatrix(this.objects.length); // Створюємо нову матрицю
         this.updateMatrix(index); // Оновлюємо матрицю для експерта
       });
-  
+
       // Зберігаємо оновлений список об'єктів у StateService
       this.stateService.setObjects(this.objects);
-  
+
       // Логування дії
       this.logAction('Завантажено новий файл, список об’єктів оновлено.');
     };
-  
+
     reader.readAsText(file);
   }
 
@@ -85,37 +85,37 @@ export class ObjectListComponent {
     });
 
     this.stateService.setObjects(this.objects);
-    this.logAction(`Додано об'єкт: ${name}`); 
-    
+    this.logAction(`Додано об'єкт: ${name}`);
+
   }
- 
+
 
   // Видалення об'єкта
   removeObject(index: number, expertIndex: number) {
     const expert = this.experts[expertIndex];
-  
+
     // Отримуємо ім'я об'єкта, який потрібно видалити
     const removedObjectName = expert.objects[index].name;
-  
+
     // Видаляємо об'єкт із глобального списку (якщо він є)
     this.objects = this.objects.filter(obj => obj.name !== removedObjectName);
-  
+
     // Видаляємо об'єкт у всіх експертів за ім'ям
     this.experts.forEach((exp) => {
       exp.objects = exp.objects.filter(obj => obj.name !== removedObjectName);
       exp.sortedObjects = [...exp.objects].sort((a, b) => a.value - b.value); // Оновлюємо sortedObjects
     });
-  
+
     // Оновлюємо матриці для всіх експертів
     this.experts.forEach((_, index) => this.updateMatrix(index));
-  
+
     // Зберігаємо зміни
     this.stateService.setObjects(this.objects);
-  
+
     // Логування
     this.logAction(`Видалено об'єкт: ${removedObjectName}`);
   }
-  
+
 
   // Логування дій
   logAction(action: string) {
@@ -170,33 +170,33 @@ export class ObjectListComponent {
     const expert = this.experts[expertIndex];
     const size = expert.objects.length;
 
-  // Сортуємо об'єкти для відображення в матриці за `value`
-  expert.sortedObjects = [...expert.objects].sort((a, b) => a.value - b.value);
+    // Сортуємо об'єкти для відображення в матриці за `value`
+    expert.sortedObjects = [...expert.objects].sort((a, b) => a.value - b.value);
 
-  // Створюємо нову матрицю
-  const newMatrix: number[][] = Array(size).fill(0).map(() => Array(size).fill(0));
+    // Створюємо нову матрицю
+    const newMatrix: number[][] = Array(size).fill(0).map(() => Array(size).fill(0));
 
-  // Оновлюємо матрицю на основі індексів (рейтингу) об'єктів у списку
-  for (let i = 0; i < size; i++) {
-    for (let j = 0; j < size; j++) {
-      // Знаходимо об'єкти в `expert.objects`
-      const objectI = expert.sortedObjects[i]; // Об'єкт із `value` для рядка
-      const objectJ = expert.sortedObjects[j]; // Об'єкт із `value` для стовпця
+    // Оновлюємо матрицю на основі індексів (рейтингу) об'єктів у списку
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        // Знаходимо об'єкти в `expert.objects`
+        const objectI = expert.sortedObjects[i]; // Об'єкт із `value` для рядка
+        const objectJ = expert.sortedObjects[j]; // Об'єкт із `value` для стовпця
 
-      // Визначаємо індекси об'єктів у списку (рейтинги)
-      const indexI = expert.objects.findIndex(obj => obj.name === objectI.name);
-      const indexJ = expert.objects.findIndex(obj => obj.name === objectJ.name);
+        // Визначаємо індекси об'єктів у списку (рейтинги)
+        const indexI = expert.objects.findIndex(obj => obj.name === objectI.name);
+        const indexJ = expert.objects.findIndex(obj => obj.name === objectJ.name);
 
-      // Попарні порівняння на основі рейтингу (індекса у списку)
-      if (indexI > indexJ) {
-        newMatrix[i][j] = -1; // Об'єкт I має нижчий рейтинг
-      } else if (indexI < indexJ) {
-        newMatrix[i][j] = 1;  // Об'єкт I має вищий рейтинг
-      } else {
-        newMatrix[i][j] = 0;  // Об'єкти рівні
+        // Попарні порівняння на основі рейтингу (індекса у списку)
+        if (indexI > indexJ) {
+          newMatrix[i][j] = -1; // Об'єкт I має нижчий рейтинг
+        } else if (indexI < indexJ) {
+          newMatrix[i][j] = 1;  // Об'єкт I має вищий рейтинг
+        } else {
+          newMatrix[i][j] = 0;  // Об'єкти рівні
+        }
       }
     }
-  }
 
     expert.matrix = newMatrix;
     this.stateService.setComparisonMatrix(expert.name, newMatrix);
@@ -213,26 +213,26 @@ export class ObjectListComponent {
     if (this.draggedItemIndex !== null && this.draggedItemIndex !== index) {
       const expert = this.experts[expertIndex];
       const draggedItem = expert.objects[this.draggedItemIndex];
-  
+
       // Видаляємо об'єкт з початкової позиції та додаємо на нову позицію
       expert.objects.splice(this.draggedItemIndex, 1); // Видаляємо об'єкт
       expert.objects.splice(index, 0, draggedItem); // Додаємо об'єкт на нову позицію
-  
+
       // Перераховуємо sortedObjects без зміни значення value
-  
+
       this.logAction(`${expert.name} перетягнув "${draggedItem.name}" з позиції ${this.draggedItemIndex + 1} на ${index + 1}`);
 
       // Оновлюємо матрицю для конкретного експерта
       this.updateMatrix(expertIndex);
-  
+
     }
-  
+
     // Скидаємо перетягуваний індекс
     this.draggedItemIndex = null;
-  
+
     console.log('Оновлений список об\'єктів:', this.experts[expertIndex].objects);
   }
-  
+
 
   onDragOver(event: Event) {
     event.preventDefault();  // Дозволяємо drop
@@ -246,7 +246,7 @@ export class ObjectListComponent {
 
   createInitialMatrix(size: number): number[][] {
     const matrix: number[][] = Array(size).fill(0).map(() => Array(size).fill(0));
-  
+
     for (let i = 0; i < size; i++) {
       for (let j = 0; j < size; j++) {
         if (i > j) {
@@ -258,7 +258,7 @@ export class ObjectListComponent {
         }
       }
     }
-  
+
     return matrix;
   }
 
@@ -271,33 +271,33 @@ export class ObjectListComponent {
       sortedObjects: [...this.objects].sort((a, b) => a.value - b.value), // Сортуємо за value
       matrix: this.createInitialMatrix(this.objects.length), // Створюємо початкову матрицю
     };
-  
+
     // Додаємо експерта до списку
     this.experts.push(newExpert);
-  
+
     // Зберігаємо експерта в StateService
     this.stateService.setComparisonMatrix(newExpertName, newExpert.matrix);
-  
+
     // Логування
     this.logAction(`Додано експерта: ${newExpertName}`);
   }
-  
 
-// Видалення останнього експерта
-removeExpert() {
-  if (this.experts.length > 1) {
-    const removedExpert = this.experts.pop(); // Видаляємо останнього експерта
 
-    // Видаляємо дані експерта з StateService
-    if (removedExpert) {
-      this.stateService.removeExpert(removedExpert.name);
-      this.logAction(`Видалено експерта: ${removedExpert.name}`);
+  // Видалення останнього експерта
+  removeExpert() {
+    if (this.experts.length > 1) {
+      const removedExpert = this.experts.pop(); // Видаляємо останнього експерта
+
+      // Видаляємо дані експерта з StateService
+      if (removedExpert) {
+        this.stateService.removeExpert(removedExpert.name);
+        this.logAction(`Видалено експерта: ${removedExpert.name}`);
+      }
+    } else {
+      // Якщо експертів менше 1, просто логуємо спробу
+      this.logAction('Спроба видалення останнього експерта заблокована');
     }
-  } else {
-    // Якщо експертів менше 1, просто логуємо спробу
-    this.logAction('Спроба видалення останнього експерта заблокована');
   }
-}
 
 
 }
