@@ -22,7 +22,7 @@
               (dragstart)="onDragStart(i, j)" (dragover)="onDragOver($event)" 
               (drop)="onDrop(i, j)">
             {{ obj.name }}
-            <button class="remove-btn" (click)="removeObject(j)">×</button>
+            <button class="remove-btn" (click)="removeObject(j, i)">×</button>
           </li>
         </ul>
         <input type="text" #newObject placeholder="Новий об'єкт">

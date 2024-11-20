@@ -42,31 +42,34 @@ export class ObjectListComponent {
   onFileUpload(event: any) {
     const file = event.target.files[0];
     const reader = new FileReader();
-
+  
     reader.onload = (e: any) => {
       const text = e.target.result;
       this.draft = text.split('\n').filter((line: string) => line.trim() !== '');
-      // Записуємо значення з draft у objects, з індексом як value
+  
+      // Оновлюємо глобальний список об'єктів
       this.objects = this.draft.map((name: string, index: number) => ({
-        name,
+        name: name.trim(),
         value: index
       }));
-
-      // Оновлюємо списки об'єктів та матриці для всіх експертів
+  
+      // Оновлюємо списки об'єктів, сортування та матриці для всіх експертів
       this.experts.forEach((expert, index) => {
-        expert.objects = [...this.objects]; // Копіюємо новий глобальний список об'єктів
+        expert.objects = [...this.objects]; // Замінюємо список об'єктів для експерта
         expert.sortedObjects = [...expert.objects].sort((a, b) => a.value - b.value); // Сортуємо об'єкти
-        expert.matrix = this.createEmptyMatrix(this.objects.length); // Оновлюємо матрицю
-        this.updateMatrix(index); // Перераховуємо матрицю для кожного експерта
+        expert.matrix = this.createEmptyMatrix(this.objects.length); // Створюємо нову матрицю
+        this.updateMatrix(index); // Оновлюємо матрицю для експерта
       });
-
+  
+      // Зберігаємо оновлений список об'єктів у StateService
       this.stateService.setObjects(this.objects);
-      this.logAction('Завантажено файл');
+  
+      // Логування дії
+      this.logAction('Завантажено новий файл, список об’єктів оновлено.');
     };
-
+  
     reader.readAsText(file);
   }
-
 
   // Додавання нового об'єкта
   addObject(name: string) {
@@ -88,21 +91,31 @@ export class ObjectListComponent {
  
 
   // Видалення об'єкта
-  removeObject(index: number) {
-    if (index >= 0 && index < this.objects.length) {
-      const removedObject = this.objects.splice(index, 1)[0];
-
-      // Видаляємо об'єкт у всіх експертів
-      this.experts.forEach((expert, expertIndex) => {
-        expert.objects = expert.objects.filter(obj => obj.name !== removedObject.name);
-        expert.sortedObjects = [...expert.objects].sort((a, b) => a.value - b.value);
-        this.updateMatrix(expertIndex); // Оновлюємо матрицю для кожного експерта
-      });
-
-      this.stateService.setObjects(this.objects);
-      this.logAction(`Видалено об'єкт: ${removedObject.name}`);
-    }
+  removeObject(index: number, expertIndex: number) {
+    const expert = this.experts[expertIndex];
+  
+    // Отримуємо ім'я об'єкта, який потрібно видалити
+    const removedObjectName = expert.objects[index].name;
+  
+    // Видаляємо об'єкт із глобального списку (якщо він є)
+    this.objects = this.objects.filter(obj => obj.name !== removedObjectName);
+  
+    // Видаляємо об'єкт у всіх експертів за ім'ям
+    this.experts.forEach((exp) => {
+      exp.objects = exp.objects.filter(obj => obj.name !== removedObjectName);
+      exp.sortedObjects = [...exp.objects].sort((a, b) => a.value - b.value); // Оновлюємо sortedObjects
+    });
+  
+    // Оновлюємо матриці для всіх експертів
+    this.experts.forEach((_, index) => this.updateMatrix(index));
+  
+    // Зберігаємо зміни
+    this.stateService.setObjects(this.objects);
+  
+    // Логування
+    this.logAction(`Видалено об'єкт: ${removedObjectName}`);
   }
+  
 
   // Логування дій
   logAction(action: string) {
