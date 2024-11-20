@@ -111,3 +111,20 @@ table th {
 .cl-b {
   justify-self: center;
 }
+
+.expert-controls {
+  margin-bottom: 20px;
+}
+
+.expert-controls button {
+  font-size: 18px;
+  padding: 5px 10px;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.expert-controls p {
+  display: inline-block;
+  margin-left: 10px;
+  font-weight: bold;
+}

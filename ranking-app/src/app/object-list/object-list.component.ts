@@ -20,8 +20,22 @@ export class ObjectListComponent {
   ngOnInit() {
     this.objects = this.stateService.getObjects();
     this.protocol = JSON.parse(localStorage.getItem('protocol') || '[]');
-    this.initializeExperts();
     console.log(this.objects);
+
+    const expertsData = this.stateService.getExpertsData();
+    if (Object.keys(expertsData).length > 0) {
+      // Якщо є збережені експерти, відновлюємо їх
+      this.experts = Object.keys(expertsData).map((expertName) => ({
+        name: expertName,
+        objects: [...this.objects], // Відновлюємо об'єкти
+        sortedObjects: [...this.objects].sort((a, b) => a.value - b.value), // Сортуємо
+        matrix: expertsData[expertName] // Відновлюємо матрицю з StateService
+      }));
+      this.numExperts = this.experts.length; // Оновлюємо кількість експертів
+    } else {
+      // Якщо експертів немає, ініціалізуємо стандартних
+      this.initializeExperts();
+    }
   }
 
   // Метод для завантаження CSV-файлу
@@ -104,10 +118,14 @@ export class ObjectListComponent {
   initializeExperts() {
     this.experts = Array.from({ length: this.numExperts }, (_, i) => ({
       name: `Експерт ${i + 1}`,
-      objects: [...this.objects], // Локальний список об'єктів
+      objects: [...this.objects],
       sortedObjects: [...this.objects].sort((a, b) => a.value - b.value),
       matrix: this.createEmptyMatrix(this.objects.length),
     }));
+    // Синхронізуємо з StateService
+    this.experts.forEach((expert) =>
+      this.stateService.setComparisonMatrix(expert.name, expert.matrix)
+    );
   }
 
   // Оновлення кількості експертів
@@ -115,24 +133,21 @@ export class ObjectListComponent {
     this.numExperts = count;
 
     if (count > this.experts.length) {
-      // Додаємо нових експертів
       for (let i = this.experts.length; i < count; i++) {
         this.experts.push({
           name: `Експерт ${i + 1}`,
-          objects: [...this.objects], // Копіюємо глобальний список об'єктів
-          sortedObjects: [...this.objects].sort((a, b) => a.value - b.value), // Ініціалізуємо відсортований список
-          matrix: this.createEmptyMatrix(this.objects.length), // Ініціалізуємо порожню матрицю
+          objects: [...this.objects],
+          sortedObjects: [...this.objects].sort((a, b) => a.value - b.value),
+          matrix: this.createEmptyMatrix(this.objects.length),
         });
       }
-    } else if (count < this.experts.length) {
-      // Видаляємо зайвих експертів
+    } else {
       this.experts = this.experts.slice(0, count);
     }
 
-    // Переконуємося, що матриці для всіх експертів оновлені
-    this.experts.forEach((_, index) => {
-      this.updateMatrix(index); // Оновлюємо матрицю для кожного експерта
-    });
+    this.experts.forEach((expert) =>
+      this.stateService.setComparisonMatrix(expert.name, expert.matrix)
+    );
   }
 
 
@@ -191,11 +206,11 @@ export class ObjectListComponent {
   
       // Перераховуємо sortedObjects без зміни значення value
   
+      this.logAction(`${expert.name} перетягнув "${draggedItem.name}" з позиції ${this.draggedItemIndex + 1} на ${index + 1}`);
+
       // Оновлюємо матрицю для конкретного експерта
       this.updateMatrix(expertIndex);
   
-      // Логування дії
-      this.logAction(`Експерт "${expert.name}" перетягнув "${draggedItem.name}" з позиції ${this.draggedItemIndex + 1} на ${index + 1}`);
     }
   
     // Скидаємо перетягуваний індекс
@@ -214,5 +229,61 @@ export class ObjectListComponent {
     this.stateService.clearExperts();
     this.logAction('Експертів очищено');
   }
+
+  createInitialMatrix(size: number): number[][] {
+    const matrix: number[][] = Array(size).fill(0).map(() => Array(size).fill(0));
+  
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        if (i > j) {
+          matrix[i][j] = -1; // Якщо індекс об’єкта i більше за індекс об’єкта j
+        } else if (i < j) {
+          matrix[i][j] = 1;  // Якщо індекс об’єкта i менше за індекс об’єкта j
+        } else {
+          matrix[i][j] = 0;  // Якщо індекси рівні
+        }
+      }
+    }
+  
+    return matrix;
+  }
+
+  // Додавання нового експерта
+  addExpert() {
+    const newExpertName = `Експерт ${this.experts.length + 1}`;
+    const newExpert = {
+      name: newExpertName,
+      objects: [...this.objects], // Копіюємо поточний список об'єктів
+      sortedObjects: [...this.objects].sort((a, b) => a.value - b.value), // Сортуємо за value
+      matrix: this.createInitialMatrix(this.objects.length), // Створюємо початкову матрицю
+    };
+  
+    // Додаємо експерта до списку
+    this.experts.push(newExpert);
+  
+    // Зберігаємо експерта в StateService
+    this.stateService.setComparisonMatrix(newExpertName, newExpert.matrix);
+  
+    // Логування
+    this.logAction(`Додано експерта: ${newExpertName}`);
+  }
+  
+
+// Видалення останнього експерта
+removeExpert() {
+  if (this.experts.length > 1) {
+    const removedExpert = this.experts.pop(); // Видаляємо останнього експерта
+
+    // Видаляємо дані експерта з StateService
+    if (removedExpert) {
+      this.stateService.removeExpert(removedExpert.name);
+      this.logAction(`Видалено експерта: ${removedExpert.name}`);
+    }
+  } else {
+    // Якщо експертів менше 1, просто логуємо спробу
+    this.logAction('Спроба видалення останнього експерта заблокована');
+  }
+}
+
 
 }

@@ -2,9 +2,10 @@
   <h2>Управління списком об'єктів і матрицею попарних порівнянь</h2>
 
   <!-- Вибір кількості експертів -->
-  <div class="row expert-count">
-    <label for="expertCount">Кількість експертів:</label>
-    <input id="expertCount" type="number" [(ngModel)]="numExperts" (change)="updateExpertsCount(numExperts)" min="1">
+  <div class="expert-controls">
+    <button (click)="addExpert()">+</button>
+    <button (click)="removeExpert()">-</button>
+    <p>Кількість експертів: {{ experts.length }}</p>
   </div>
   <input type="file" (change)="onFileUpload($event)">
   <button (click)="clearExperts()" class="cl-b">Очистити експертів</button>
