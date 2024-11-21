@@ -16,6 +16,11 @@ export class ObjectListComponent {
     }[]
   }[] = [];
 
+  selectedExpert1: number | null = null; // Індекс першого обраного експерта
+  selectedExpert2: number | null = null; // Індекс другого обраного експерта
+  hemmingVector: number[] = []; // Результат вектора відстані Хеммінга
+
+
   experts: { name: string, objects: { name: string, value: number }[], sortedObjects: { name: string, value: number }[], matrix: number[][] }[] = [];
   numExperts: number = 1;
 
@@ -246,6 +251,9 @@ export class ObjectListComponent {
 
     this.generateAllPermutationsForObjects
     this.cookDistance();
+    const vectorForSecondExpert = this.getUpperRightVector(1); // Вектор для експерта 2
+    console.log(vectorForSecondExpert);
+
   }
 
   // Перетягування елемента (початок)
@@ -406,29 +414,29 @@ export class ObjectListComponent {
       console.warn('cookDistance: Необхідні дані відсутні');
       return;
     }
-  
+
     this.cookDistances = [];
-  
+
     this.experts.forEach((expert) => {
       const expData: { numVect: { value: number }[], sum: number }[] = [];
-  
+
       this.allPossibleObjects.forEach((permutation) => {
         const numVect = permutation.objects.map((object, index) => {
           const expertValue = expert.objects[index]?.value || 0; // Перевірка на undefined
           const distance = Math.abs(object.value - expertValue);
           return { value: distance };
         });
-  
+
         const sum = numVect.reduce((acc, item) => acc + item.value, 0);
         expData.push({ numVect, sum });
       });
-  
+
       this.cookDistances.push({ exp: expData });
     });
-  
+
     console.log('Cook Distances:', this.cookDistances);
   }
-  
+
 
   getSummaryTable() {
     const result = this.allPossibleObjects.map((_, index) => {
@@ -451,6 +459,7 @@ export class ObjectListComponent {
     const summaryTable = this.getSummaryTable(); // Отримуємо підсумкову таблицю
     return Math.min(...summaryTable.map(row => row.totalSum)); // Знаходимо найменшу ЗагальнуСуму
   }
+
   // Оновлення всіх експертів у stateService
   updateExpertsInState() {
     this.experts.forEach((expert) => {
@@ -458,13 +467,103 @@ export class ObjectListComponent {
     });
   }
 
+  getVectorsWithMinSum() {
+    const summaryTable = this.getSummaryTable(); // Отримуємо підсумкову таблицю
+    const minSum = this.getMinTotalSum(); // Знаходимо найменшу ЗагальнуСуму
+
+    // Фільтруємо перестановки з мінімальною сумою
+    const candidates = summaryTable
+      .map((row, index) => ({ ...row, index }))
+      .filter(row => row.totalSum === minSum);
+
+    if (candidates.length === 0) return []; // Якщо таких перестановок немає
+
+    // Знаходимо мінімальний "Максимум" серед кандидатів
+    const minMax = Math.min(...candidates.map(row => row.maxValue));
+
+    // Отримуємо індекси перестановок із мінімальним "Максимумом"
+    const selectedIndices = candidates
+      .filter(row => row.maxValue === minMax)
+      .map(row => row.index);
+
+    // Повертаємо вектори об’єктів із цих індексів
+    return selectedIndices.map(index => this.allPossibleObjects[index]?.objects || []);
+  }
+
+  getMinMaxAmongMinSums() {
+    const summaryTable = this.getSummaryTable(); // Отримуємо підсумкову таблицю
+    const minSum = this.getMinTotalSum(); // Знаходимо мінімальну суму
+
+    // Фільтруємо рядки з мінімальною сумою
+    const candidates = summaryTable.filter(row => row.totalSum === minSum);
+
+    // Знаходимо мінімальний "Максимум" серед них
+    return Math.min(...candidates.map(row => row.maxValue));
+  }
 
 
 
   //4. Для матриці ПП кожного експерта роблю вектор враховуючи лише 
   // верхню праву частину якоїсь там скісної матриці. довжина має бути n*(N-1)/2
+  getUpperRightVector(expertIndex: number): number[] {
+    const expert = this.experts[expertIndex]; // Отримуємо конкретного експерта
+    const matrix = expert.matrix; // Матриця експерта
+    const vector: number[] = []; // Масив чисел (тип number)
+
+    // Проходимося по матриці, зберігаючи елементи, що вище діагоналі
+    for (let i = 0; i < matrix.length; i++) {
+      for (let j = i + 1; j < matrix[i].length; j++) { // j починається з i+1
+        vector.push(matrix[i][j]); // Додаємо число у вектор
+      }
+    }
+
+    return vector; // Повертаємо вектор
+  }
 
 
 
-  //5. знаходжу відстань хеммінга?
+
+  //5. знаходжу відстань хеммінга
+  calculateModularSumVector(expertIndex1: number, expertIndex2: number): number[] {
+    // Отримуємо вектори для двох експертів
+    const vector1 = this.getUpperRightVector(expertIndex1);
+    const vector2 = this.getUpperRightVector(expertIndex2);
+
+    // Перевірка на однакову довжину векторів
+    if (vector1.length !== vector2.length) {
+      throw new Error(`Вектори експертів ${expertIndex1} та ${expertIndex2} мають різну довжину.`);
+    }
+
+    // Обчислюємо фінальний вектор шляхом складання елементів по модулю
+    const finalVector = vector1.map((value, index) => Math.abs(value + vector2[index]));
+
+    // Додаємо в кінець вектора суму всіх елементів
+    const sumOfElements = finalVector.reduce((sum, value) => sum + value, 0);
+    finalVector.push(sumOfElements);
+
+    return finalVector;
+  }
+
+  canComputeHemming(): boolean {
+    return this.selectedExpert1 !== null &&
+      this.selectedExpert2 !== null &&
+      this.selectedExpert1 !== this.selectedExpert2;
+  }
+
+  computeHemmingDistance(): void {
+    if (this.selectedExpert1 === null || this.selectedExpert2 === null) {
+      console.error("Необрано експертів для обчислення.");
+      return;
+    }
+
+    try {
+      // Викликаємо функцію обчислення відстані
+      this.hemmingVector = this.calculateModularSumVector(this.selectedExpert1, this.selectedExpert2);
+      console.log('Результат вектора Хеммінга:', this.hemmingVector);
+    } catch (error) {
+      console.error('Помилка під час обчислення відстані Хеммінга:', error);
+    }
+  }
+
+
 }

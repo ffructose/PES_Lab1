@@ -97,36 +97,90 @@
     <!-- Права секція -->
     <div class="right-container">
 
-      <!-- Всі можливі перестановки -->
-      <div class="col all-possible">
-        <h4>Всі можливі перестановки</h4>
-        <div class="scrollable-table">
-          <table border="1">
-            <tr *ngFor="let permutation of allPossibleObjects">
-              <td *ngFor="let obj of permutation.objects">{{ obj.value }}</td>
-            </tr>
-          </table>
+      <div class="top-container">
+        <!-- Всі можливі перестановки -->
+        <div class="col all-possible">
+          <h4>Всі можливі перестановки</h4>
+          <div class="scrollable-table">
+            <table border="1">
+              <tr *ngFor="let permutation of allPossibleObjects">
+                <td *ngFor="let obj of permutation.objects">{{ obj.value }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Підсумкова таблиця -->
+        <div class="col summary-table">
+          <h4>Підсумкова таблиця</h4>
+          <div class="scrollable-table">
+            <table border="1">
+              <thead>
+                <tr>
+                  <th>Сума</th>
+                  <th>Макс</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of getSummaryTable()"
+                  [style.background-color]=" row.totalSum === getMinTotalSum() && row.maxValue === getMinMaxAmongMinSums() ? 'lightgreen' : 'transparent' ">
+                  <td>{{ row.totalSum }}</td>
+                  <td>{{ row.maxValue }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+
+
+      </div>
+
+
+      <div class="bot-container">
+        <!-- Вектори з мінімальною сумою -->
+        <div class="col min-sum-vectors">
+          <h4>Вектори з мінімальною сумою</h4>
+          <div class="scrollable-table">
+            <table>
+              <tr *ngFor="let vector of getVectorsWithMinSum()">
+                <td *ngFor="let obj of vector">{{ obj.name }}</td>
+              </tr>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- Підсумкова таблиця -->
-      <div class="col summary-table">
-        <h4>Підсумкова таблиця</h4>
-        <div class="scrollable-table">
+      <div class="hem-container">
+        <h3>Обчислення відстані Хеммінга</h3>
+
+        <!-- Вибір першого експерта -->
+        <label for="expert1">Перший експерт:</label>
+        <select id="expert1" [(ngModel)]="selectedExpert1" [disabled]="experts.length < 2">
+          <option *ngFor="let expert of experts; let i = index" [value]="i">{{ expert.name }}</option>
+        </select>
+
+        <!-- Вибір другого експерта -->
+        <label for="expert2">Другий експерт:</label>
+        <select id="expert2" [(ngModel)]="selectedExpert2" [disabled]="experts.length < 2">
+          <option *ngFor="let expert of experts; let i = index" [value]="i" [disabled]="i === selectedExpert1">{{
+            expert.name }}</option>
+        </select>
+
+        <!-- Кнопка для обчислення -->
+        <button (click)="computeHemmingDistance()" [disabled]="!canComputeHemming()">Знайти відстань Хеммінга</button>
+
+        <!-- Виведення результату -->
+        <div *ngIf="hemmingVector.length > 0" class="hemming-result">
+          <h4>Результат:</h4>
           <table border="1">
-            <thead>
-              <tr>
-                <th>Сума</th>
-                <th>Макс</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of getSummaryTable()"
-                [style.background-color]="row.totalSum === getMinTotalSum() ? 'lightgreen' : 'transparent'">
-                <td>{{ row.totalSum }}</td>
-                <td>{{ row.maxValue }}</td>
-              </tr>
-            </tbody>
+            <tr>
+              <td *ngFor="let value of hemmingVector; let i = index"
+                [style.background-color]="i === hemmingVector.length - 1 ? 'yellow' : 'transparent'">
+                {{ value }}
+              </td>
+            </tr>
           </table>
         </div>
       </div>

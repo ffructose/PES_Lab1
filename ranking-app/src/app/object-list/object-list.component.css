@@ -152,18 +152,9 @@ table th {
 
 /* Оформлення таблиці відстаней Кука */
 .film-cook-distance table {
-  margin-top: 5px;
+  margin-top: 0px;
   margin: 0px;
   padding: 0px;
-}
-
-.all-possible table {
-  margin-top: 5px;
-  margin: 0px;
-  padding: 0px;
-}
-.all-possible td {
-  padding: 1px;
 }
 
 .film-cook-distance td {
@@ -186,7 +177,7 @@ table th {
   flex: 3;
 }
 
-.right-container {
+.top-container {
   flex: 1;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -196,18 +187,17 @@ table th {
   justify-content: space-between;
 }
 
-.right-container h4 {
+.top-container h4 {
   text-align: center;
-  margin-bottom: 10px;
 }
 
-.right-container table {
+.top-container table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 10px;
 }
 
-.right-container th, .right-container td {
+.top-container th, .top-container td {
   border: 1px solid #ccc;
   text-align: center;
   padding: 5px;
@@ -216,38 +206,54 @@ table th {
 
 
 
+
+
+.bot-container {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 5px;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+}
+
+.bot-container h4 {
+  text-align: center;
+}
+
+.bot-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bot-container th, .bot-container td {
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+
+
+
 .all-possible table {
   margin-top: 5px;
   margin: 0px;
-  padding: 0px;
+  padding: 5px;
 }
 .all-possible td {
   padding: 1px;
 }
 
-.summary-table {
-  border-radius: 8px;
-  padding: 10px;
-  background-color: #f9f9f9;
-}
-
-
 
 .summary-table table {
   margin-top: 5px;
   margin: 0px;
-  padding: 0px;
+  padding: 5px;
 }
 
-.summary-table th, .summary-table td {
-  padding: 1px;
-}
 
-.summary-table th {
-  background-color: #f2f2f2;
-}
 
-/* Прокручувані таблиці */
+/* Базовий стиль для таблиць */
 .scrollable-table {
   max-height: 200px; /* Встановлюємо висоту для 8 рядків таблиці */
   overflow-y: auto;  /* Додаємо вертикальну прокрутку */
@@ -255,7 +261,6 @@ table th {
   padding: 2px; /* Внутрішні відступи */
 }
 
-/* Схоже на інші стилі для таблиць */
 .scrollable-table table {
   width: 100%;
   border-collapse: collapse;
@@ -271,6 +276,19 @@ table th {
   background-color: #f2f2f2;
 }
 
+/* Стиль для жовтого стовпця */
+.scrollable-table .yellow-column {
+  background-color: yellow;
+  font-weight: bold;
+}
+
+/* Стиль для зеленого рядка */
+.scrollable-table .green-row {
+  background-color: lightgreen;
+  font-weight: bold;
+}
+
+/* Прокручуваний скролбар */
 .scrollable-table::-webkit-scrollbar {
   width: 8px; /* Ширина скролбару */
   height: 8px;
@@ -283,4 +301,105 @@ table th {
 
 .scrollable-table::-webkit-scrollbar-thumb:hover {
   background-color: #aaa; /* Колір скролбару при наведенні */
+}
+
+
+.min-sum-vectors table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.min-sum-vectors th, .min-sum-vectors td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 5px;
+}
+
+.min-sum-vectors h4 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+
+/* Контейнер для відстані Хеммінга */
+.hem-container {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hem-container h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Випадаючі списки та кнопка */
+.hem-container select {
+  margin: 10px;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.hem-container select:disabled {
+  background-color: #eaeaea;
+  cursor: not-allowed;
+}
+
+.hem-container button {
+  margin: 10px;
+  padding: 10px 15px;
+  font-size: 16px;
+  color: white;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.hem-container button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.hem-container button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+/* Таблиця результатів */
+.hem-container .hemming-result {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.hem-container table {
+  margin: 10px auto;
+  border-collapse: collapse;
+  width: auto;
+}
+
+.hem-container td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.hem-container td:last-child {
+  background-color: #fffa90; /* Жовтий фон для останнього елемента */
+  font-weight: bold;
 }
