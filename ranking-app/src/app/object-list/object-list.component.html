@@ -11,14 +11,19 @@
   <button (click)="clearExperts()" class="cl-b">Очистити експертів</button>
 
   <div class="main-container">
+
     <!-- Ліва секція: Експерти -->
     <div class="experts-container">
+
       <!-- Відображення експертів -->
-      <div *ngIf="experts.length > 0" >
+      <div *ngIf="experts.length > 0">
         <div *ngFor="let expert of experts; let i = index" class="row expert-section">
+
+
+
           <!-- Ліва колонка: список -->
           <div class="col film-list">
-            <h4> {{ expert.name }}</h4>
+            <h4>{{ expert.name }}</h4>
             <ul>
               <li *ngFor="let obj of expert.objects; let j = index" draggable="true" (dragstart)="onDragStart(i, j)"
                 (dragover)="onDragOver($event)" (drop)="onDrop(i, j)">
@@ -27,12 +32,14 @@
               </li>
             </ul>
             <input type="text" #newObject placeholder="Новий об'єкт">
-            <button (click)="addObject(newObject.value)">Додати об'єкт</button>
+            <button (click)="addObject(newObject.value)">Додати </button>
           </div>
+
+
 
           <!-- Права колонка: матриця -->
           <div class="col film-matrix">
-            <h4>МПП </h4>
+            <h4>МПП</h4>
             <table border="1">
               <tr>
                 <th></th>
@@ -43,7 +50,10 @@
                 <td *ngFor="let value of row">{{ value }}</td>
               </tr>
             </table>
+
           </div>
+
+
 
           <!-- Таблиця векторів -->
           <div class="col film-vectors">
@@ -64,31 +74,64 @@
             </table>
           </div>
 
-          <!-- Таблиця для numVect і sum -->
+
+
+          <!-- Таблиця для Відстані Кука -->
           <div class="col film-cook-distance">
-            <h4>Відстані Кука </h4>
-            <table border="1">
-              <tr *ngFor="let cookData of cookDistances[i]?.exp">
-                <td *ngFor="let num of cookData.numVect">{{ num.value }}</td>
-                <td style="background-color: yellow">{{ cookData.sum }}</td>
-              </tr>
-            </table>
+            <h4>Відстані Кука</h4>
+            <div class="scrollable-table">
+              <table border="1">
+                <tr *ngFor="let cookData of cookDistances[i]?.exp">
+                  <td *ngFor="let num of cookData.numVect">{{ num.value }}</td>
+                  <td style="background-color: yellow">{{ cookData.sum }}</td>
+                </tr>
+              </table>
+            </div>
           </div>
+
+
         </div>
       </div>
     </div>
+
+    <!-- Права секція -->
+    <div class="right-container">
+
+      <!-- Всі можливі перестановки -->
+      <div class="col all-possible">
+        <h4>Всі можливі перестановки</h4>
+        <div class="scrollable-table">
+          <table border="1">
+            <tr *ngFor="let permutation of allPossibleObjects">
+              <td *ngFor="let obj of permutation.objects">{{ obj.value }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Підсумкова таблиця -->
+      <div class="col summary-table">
+        <h4>Підсумкова таблиця</h4>
+        <div class="scrollable-table">
+          <table border="1">
+            <thead>
+              <tr>
+                <th>Сума</th>
+                <th>Макс</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of getSummaryTable()"
+                [style.background-color]="row.totalSum === getMinTotalSum() ? 'lightgreen' : 'transparent'">
+                <td>{{ row.totalSum }}</td>
+                <td>{{ row.maxValue }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+    </div>
   </div>
-
-  <!-- Права секція -->
-  <div class="right-container">
-    <h4>Всі можливі перестановки</h4>
-    <table border="1">
-      <tr *ngFor="let permutation of allPossibleObjects">
-        <td *ngFor="let obj of permutation.objects">{{ obj.value }}</td>
-      </tr>
-    </table>
-
-
-  </div>
-  
 </div>

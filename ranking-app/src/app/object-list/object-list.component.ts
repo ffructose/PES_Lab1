@@ -26,31 +26,40 @@ export class ObjectListComponent {
   constructor(private stateService: StateService) { }
 
   ngOnInit() {
+    const savedObjects = JSON.parse(localStorage.getItem('objects') || '[]');
+    // Завантажуємо об'єкти з StateService
     this.objects = this.stateService.getObjects().map((obj, index) => ({
       ...obj,
       value: index + 1 // Починаємо value з 1
     }));
+
+    // Завантажуємо збережені протоколи
     this.protocol = JSON.parse(localStorage.getItem('protocol') || '[]');
     console.log(this.objects);
+    // Генеруємо перестановки для об'єктів
     this.generateAllPermutationsForObjects();
-  
+
+    // Відновлюємо дані експертів
     const expertsData = this.stateService.getExpertsData();
     if (Object.keys(expertsData).length > 0) {
-      // Якщо є збережені експерти, відновлюємо їх
+      // Якщо є збережені експерти
       this.experts = Object.keys(expertsData).map((expertName) => ({
         name: expertName,
         objects: [...this.objects], // Відновлюємо об'єкти
         sortedObjects: [...this.objects].sort((a, b) => a.value - b.value), // Сортуємо
-        matrix: expertsData[expertName] // Відновлюємо матрицю з StateService
+        matrix: expertsData[expertName] // Відновлюємо матрицю
       }));
       this.numExperts = this.experts.length; // Оновлюємо кількість експертів
     } else {
-      // Якщо експертів немає, ініціалізуємо стандартних
+      // Ініціалізуємо експертів за замовчуванням
       this.initializeExperts();
     }
-    this.lab3();
+    this.generateAllPermutationsForObjects;
+    // Перерахунок таблиці відстаней Кука
+    this.cookDistance();
   }
-  
+
+
   // Метод для завантаження CSV-файлу
   onFileUpload(event: any) {
     const file = event.target.files[0];
@@ -63,7 +72,7 @@ export class ObjectListComponent {
       // Оновлюємо глобальний список об'єктів
       this.objects = this.draft.map((name: string, index: number) => ({
         name: name.trim(),
-        value: index +1
+        value: index + 1
       }));
 
       // Оновлюємо списки об'єктів, сортування та матриці для всіх експертів
@@ -82,52 +91,71 @@ export class ObjectListComponent {
     };
 
     reader.readAsText(file);
+    this.generateAllPermutationsForObjects;
+    // Перерахунок таблиці відстаней Кука
+    this.cookDistance();
   }
 
   // Додавання нового об'єкта
   addObject(name: string) {
-    const value = this.objects.length+1;
+    if (!name.trim()) {
+      this.logAction('Спроба додати порожній об’єкт заблокована');
+      return;
+    }
+
+    const value = this.objects.length + 1; // Новий value
     const newObject = { name, value };
     this.objects.push(newObject);
 
     // Оновлюємо об'єкти у всіх експертів
-    this.experts.forEach((expert, index) => {
-      expert.objects.push(newObject);
-      expert.sortedObjects = [...expert.objects].sort((a, b) => a.value - b.value);
-      this.updateMatrix(index); // Оновлюємо матрицю для кожного експерта
+    this.experts.forEach((expert) => {
+      expert.objects.push(newObject); // Додаємо новий об'єкт
+      expert.sortedObjects = [...expert.objects].sort((a, b) => a.value - b.value); // Оновлюємо сортування
     });
 
+    // Оновлюємо матриці для всіх експертів
+    this.experts.forEach((_, index) => this.updateMatrix(index));
+
+    // Оновлюємо stateService
     this.stateService.setObjects(this.objects);
-    this.logAction(`Додано об'єкт: ${name}`);
+
+    // Генеруємо перестановки та перераховуємо відстані Кука
     this.generateAllPermutationsForObjects();
+    this.cookDistance();
+
+    this.logAction(`Додано об'єкт: ${name}`);
+    this.stateService.updateExpertsData(this.experts);
+
   }
 
 
   // Видалення об'єкта
   removeObject(index: number, expertIndex: number) {
     const expert = this.experts[expertIndex];
-
-    // Отримуємо ім'я об'єкта, який потрібно видалити
     const removedObjectName = expert.objects[index].name;
 
-    // Видаляємо об'єкт із глобального списку (якщо він є)
+    // Видаляємо об'єкт із глобального списку
     this.objects = this.objects.filter(obj => obj.name !== removedObjectName);
 
-    // Видаляємо об'єкт у всіх експертів за ім'ям
+    // Оновлюємо об'єкти та матриці для всіх експертів
     this.experts.forEach((exp) => {
       exp.objects = exp.objects.filter(obj => obj.name !== removedObjectName);
-      exp.sortedObjects = [...exp.objects].sort((a, b) => a.value - b.value); // Оновлюємо sortedObjects
+      exp.sortedObjects = exp.objects.sort((a, b) => a.value - b.value);
+      exp.matrix = this.createEmptyMatrix(exp.objects.length); // Перезавантажуємо матрицю
     });
 
     // Оновлюємо матриці для всіх експертів
     this.experts.forEach((_, index) => this.updateMatrix(index));
 
-    // Зберігаємо зміни
+    // Зберігаємо список об'єктів у StateService
     this.stateService.setObjects(this.objects);
-    this.generateAllPermutationsForObjects();
 
-    // Логування
+    // Генеруємо нові перестановки та перераховуємо відстані Кука
+    this.generateAllPermutationsForObjects();
+    this.cookDistance(); // Перерахунок відстаней Кука
+
     this.logAction(`Видалено об'єкт: ${removedObjectName}`);
+    this.updateExpertsInState(); // Синхронізація експертів у StateService
   }
 
 
@@ -215,8 +243,9 @@ export class ObjectListComponent {
     expert.matrix = newMatrix;
     this.stateService.setComparisonMatrix(expert.name, newMatrix);
     this.logAction(`Матрицю оновлено для експерта: ${this.experts[expertIndex].name}`);
- 
-    this.lab3();
+
+    this.generateAllPermutationsForObjects
+    this.cookDistance();
   }
 
   // Перетягування елемента (початок)
@@ -241,6 +270,7 @@ export class ObjectListComponent {
       // Оновлюємо матрицю для конкретного експерта
       this.updateMatrix(expertIndex);
 
+
     }
 
     // Скидаємо перетягуваний індекс
@@ -258,6 +288,9 @@ export class ObjectListComponent {
     this.experts = [];
     this.stateService.clearExperts();
     this.logAction('Експертів очищено');
+    this.generateAllPermutationsForObjects;
+    // Перерахунок таблиці відстаней Кука
+    this.cookDistance();
   }
 
   createInitialMatrix(size: number): number[][] {
@@ -296,6 +329,13 @@ export class ObjectListComponent {
 
     // Логування
     this.logAction(`Додано експерта: ${newExpertName}`);
+    this.updateExpertsInState();
+
+    this.stateService.updateExpertsData(this.experts);
+    this.generateAllPermutationsForObjects;
+    // Перерахунок таблиці відстаней Кука
+    this.cookDistance();
+
   }
 
 
@@ -313,12 +353,10 @@ export class ObjectListComponent {
       // Якщо експертів менше 1, просто логуємо спробу
       this.logAction('Спроба видалення останнього експерта заблокована');
     }
+    this.stateService.updateExpertsData(this.experts);
+
   }
 
-  lab3() {
-    this.generateAllPermutationsForObjects();
-    this.cookDistance();
-  }
 
   //1. я створюю для кожного відранжованого експертом списку -
   // вектор якийсь там типу яку позицію займає обєкт в 
@@ -329,7 +367,7 @@ export class ObjectListComponent {
   //2. створюю масив де є всі можливі варіанти перестановок обєктів.
   generateAllPermutationsForObjects() {
     const results: { objects: { name: string, value: number }[] }[] = [];
-  
+
     const permute = (arr: { name: string, value: number }[], m: { name: string, value: number }[] = []) => {
       if (arr.length === 0) {
         results.push({ objects: [...m] }); // Додаємо одну з перестановок
@@ -341,57 +379,86 @@ export class ObjectListComponent {
         }
       }
     };
-  
+
     permute(this.objects);
-  
+
     // Унікалізуємо результати
     const uniqueResults = results.filter(
       (result, index, self) =>
         index === self.findIndex((r) => JSON.stringify(r) === JSON.stringify(result))
     );
-  
+
     // Упевнюємося, що початковий список не дублюється
     this.allPossibleObjects = uniqueResults.filter(
       (result) =>
         JSON.stringify(result.objects) !== JSON.stringify(this.objects)
     );
-  
+
     // Додаємо початковий список об'єктів на перше місце
     this.allPossibleObjects.unshift({ objects: [...this.objects] });
   }
-  
+
 
   //3. Для кожного експерта знаходжу оцю відстань кука 
   // на основі всіх можливих варіантів і створеного в 1му пункті вектора.
   cookDistance() {
-    // Очищуємо поточний масив cookDistances
+    if (!this.allPossibleObjects || !this.experts) {
+      console.warn('cookDistance: Необхідні дані відсутні');
+      return;
+    }
+  
     this.cookDistances = [];
   
-    // Проходимося по всіх експертах
     this.experts.forEach((expert) => {
       const expData: { numVect: { value: number }[], sum: number }[] = [];
   
-      // Проходимося по всіх перестановок об'єктів у allPossibleObjects
       this.allPossibleObjects.forEach((permutation) => {
         const numVect = permutation.objects.map((object, index) => {
-          const expertValue = expert.objects[index].value; // Беремо value з об'єкта експерта
-          const distance = Math.abs(object.value - expertValue); // Розрахунок |value - value експерта|
+          const expertValue = expert.objects[index]?.value || 0; // Перевірка на undefined
+          const distance = Math.abs(object.value - expertValue);
           return { value: distance };
         });
   
-        // Підраховуємо суму елементів у numVect
         const sum = numVect.reduce((acc, item) => acc + item.value, 0);
-  
-        // Додаємо дані про одну перестановку до експерта
         expData.push({ numVect, sum });
       });
   
-      // Додаємо дані про експерта до cookDistances
       this.cookDistances.push({ exp: expData });
     });
   
     console.log('Cook Distances:', this.cookDistances);
   }
+  
+
+  getSummaryTable() {
+    const result = this.allPossibleObjects.map((_, index) => {
+      let totalSum = 0; // Загальна сума
+      let maxValue = 0; // Максимум
+
+      this.cookDistances.forEach((expertData) => {
+        const sumForRow = expertData.exp[index]?.sum || 0; // Значення `sum` для рядка
+        totalSum += sumForRow; // Додаємо до загальної суми
+        maxValue = Math.max(maxValue, sumForRow); // Оновлюємо максимум
+      });
+
+      return { totalSum, maxValue }; // Повертаємо результат для рядка
+    });
+
+    return result;
+  }
+
+  getMinTotalSum() {
+    const summaryTable = this.getSummaryTable(); // Отримуємо підсумкову таблицю
+    return Math.min(...summaryTable.map(row => row.totalSum)); // Знаходимо найменшу ЗагальнуСуму
+  }
+  // Оновлення всіх експертів у stateService
+  updateExpertsInState() {
+    this.experts.forEach((expert) => {
+      this.stateService.setComparisonMatrix(expert.name, expert.matrix);
+    });
+  }
+
+
 
 
   //4. Для матриці ПП кожного експерта роблю вектор враховуючи лише 

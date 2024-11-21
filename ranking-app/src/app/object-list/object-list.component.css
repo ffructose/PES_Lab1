@@ -163,12 +163,10 @@ table th {
   padding: 0px;
 }
 .all-possible td {
-  font-weight: bold;
   padding: 1px;
 }
 
 .film-cook-distance td {
-  font-weight: bold;
   padding: 1px;
 }
 
@@ -194,6 +192,8 @@ table th {
   border-radius: 8px;
   padding: 20px;
   background-color: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
 }
 
 .right-container h4 {
@@ -216,3 +216,71 @@ table th {
 
 
 
+.all-possible table {
+  margin-top: 5px;
+  margin: 0px;
+  padding: 0px;
+}
+.all-possible td {
+  padding: 1px;
+}
+
+.summary-table {
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+
+
+.summary-table table {
+  margin-top: 5px;
+  margin: 0px;
+  padding: 0px;
+}
+
+.summary-table th, .summary-table td {
+  padding: 1px;
+}
+
+.summary-table th {
+  background-color: #f2f2f2;
+}
+
+/* Прокручувані таблиці */
+.scrollable-table {
+  max-height: 200px; /* Встановлюємо висоту для 8 рядків таблиці */
+  overflow-y: auto;  /* Додаємо вертикальну прокрутку */
+  border: 1px solid #ccc; /* Додаємо рамку навколо таблиці */
+  padding: 2px; /* Внутрішні відступи */
+}
+
+/* Схоже на інші стилі для таблиць */
+.scrollable-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scrollable-table th, .scrollable-table td {
+  padding: 8px;
+  text-align: center;
+  border: 1px solid #ccc;
+}
+
+.scrollable-table th {
+  background-color: #f2f2f2;
+}
+
+.scrollable-table::-webkit-scrollbar {
+  width: 8px; /* Ширина скролбару */
+  height: 8px;
+}
+
+.scrollable-table::-webkit-scrollbar-thumb {
+  background-color: #ccc; /* Колір скролбару */
+  border-radius: 30px;
+}
+
+.scrollable-table::-webkit-scrollbar-thumb:hover {
+  background-color: #aaa; /* Колір скролбару при наведенні */
+}

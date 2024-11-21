@@ -9,8 +9,13 @@ export class StateService {
 
   // Метод для отримання об'єктів
   getObjects() {
+    const savedObjects = localStorage.getItem('objects');
+    if (savedObjects) {
+      this.objects = JSON.parse(savedObjects);
+    }
     return this.objects;
   }
+  
 
   // Метод для збереження об'єктів
   setObjects(objects: { name: string, value: number }[]) {
@@ -82,6 +87,11 @@ export class StateService {
   clearExperts() {
     this.expertsData = {};
     localStorage.removeItem('expertsData');
+  }
+  updateExpertsData(experts: { name: string, matrix: number[][] }[]) {
+    experts.forEach((expert) => {
+      this.setComparisonMatrix(expert.name, expert.matrix);
+    });
   }
   
 }
