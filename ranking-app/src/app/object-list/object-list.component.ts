@@ -18,6 +18,8 @@ export class ObjectListComponent {
 
   selectedExpert1: number | null = null; // Індекс першого обраного експерта
   selectedExpert2: number | null = null; // Індекс другого обраного експерта
+  hemVec1: number[] = [];
+  hemVec2: number[] = [];
   hemmingVector: number[] = []; // Результат вектора відстані Хеммінга
 
 
@@ -526,21 +528,21 @@ export class ObjectListComponent {
   //5. знаходжу відстань хеммінга
   calculateModularSumVector(expertIndex1: number, expertIndex2: number): number[] {
     // Отримуємо вектори для двох експертів
-    const vector1 = this.getUpperRightVector(expertIndex1);
-    const vector2 = this.getUpperRightVector(expertIndex2);
-
+    this.hemVec1 = this.getUpperRightVector(expertIndex1);
+    this.hemVec2 = this.getUpperRightVector(expertIndex2);
+  
     // Перевірка на однакову довжину векторів
-    if (vector1.length !== vector2.length) {
+    if (this.hemVec1.length !== this.hemVec2.length) {
       throw new Error(`Вектори експертів ${expertIndex1} та ${expertIndex2} мають різну довжину.`);
     }
-
+  
     // Обчислюємо фінальний вектор шляхом складання елементів по модулю
-    const finalVector = vector1.map((value, index) => Math.abs(value + vector2[index]));
-
+    const finalVector = this.hemVec1.map((value, index) => Math.abs(value + this.hemVec2[index]));
+  
     // Додаємо в кінець вектора суму всіх елементів
     const sumOfElements = finalVector.reduce((sum, value) => sum + value, 0);
     finalVector.push(sumOfElements);
-
+  
     return finalVector;
   }
 

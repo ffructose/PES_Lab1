@@ -172,8 +172,24 @@
         <button (click)="computeHemmingDistance()" [disabled]="!canComputeHemming()">Знайти відстань Хеммінга</button>
 
         <!-- Виведення результату -->
-        <div *ngIf="hemmingVector.length > 0" class="hemming-result">
-          <h4>Результат:</h4>
+        <div *ngIf="hemmingVector.length > 0" class="vector-output">
+          <h4>Вектор першого експерта:</h4>
+          <table border="1">
+            <tr>
+              <td *ngFor="let value of hemVec1" class="vector-item">{{ value }}
+              </td>
+            </tr>
+          </table>
+
+          <h4>Вектор другого експерта:</h4>
+          <table border="1">
+            <tr>
+              <td *ngFor="let value of hemVec2" class="vector-item">{{ value }}
+              </td>
+            </tr>
+          </table>
+
+          <h4>Вектор Хеммінга:</h4>
           <table border="1">
             <tr>
               <td *ngFor="let value of hemmingVector; let i = index"
@@ -183,9 +199,9 @@
             </tr>
           </table>
         </div>
+
+
+
       </div>
-
-
     </div>
   </div>
-</div>
