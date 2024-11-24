@@ -536,8 +536,19 @@ export class ObjectListComponent {
       throw new Error(`Вектори експертів ${expertIndex1} та ${expertIndex2} мають різну довжину.`);
     }
   
-    // Обчислюємо фінальний вектор шляхом складання елементів по модулю
-    const finalVector = this.hemVec1.map((value, index) => Math.abs(value + this.hemVec2[index]));
+    // Обчислюємо фінальний вектор з урахуванням специфічних умов
+    const finalVector = this.hemVec1.map((value1, index) => {
+      const value2 = this.hemVec2[index];
+      if ((value1 === -1 && value2 === 1) || (value1 === 1 && value2 === -1)) {
+        return 2;
+      } else if (value1 === -1 && value2 === -1) {
+        return 0;
+      } else if (value1 === 1 && value2 === 1) {
+        return 0;
+      }
+      // За замовчуванням просто складаємо елементи
+      return value1 + value2;
+    });
   
     // Додаємо в кінець вектора суму всіх елементів
     const sumOfElements = finalVector.reduce((sum, value) => sum + value, 0);
@@ -545,6 +556,7 @@ export class ObjectListComponent {
   
     return finalVector;
   }
+  
 
   canComputeHemming(): boolean {
     return this.selectedExpert1 !== null &&
