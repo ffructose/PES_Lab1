@@ -22,6 +22,7 @@ export class ObjectListComponent {
   hemVec2: number[] = [];
   hemmingVector: number[] = []; // Результат вектора відстані Хеммінга
 
+  compromiseMatrix: { objects: { name: string, value: number }[], sortedObjects: { name: string, value: number }[], matrix: number[][] }[] = [];
 
   experts: { name: string, objects: { name: string, value: number }[], sortedObjects: { name: string, value: number }[], matrix: number[][] }[] = [];
   numExperts: number = 1;
@@ -64,6 +65,8 @@ export class ObjectListComponent {
     this.generateAllPermutationsForObjects;
     // Перерахунок таблиці відстаней Кука
     this.cookDistance();
+    this.getVectorsWithMinSum();
+
   }
 
 
@@ -216,6 +219,7 @@ export class ObjectListComponent {
 
   // Оновлення матриці попарних порівнянь
   updateMatrix(expertIndex: number) {
+
     const expert = this.experts[expertIndex];
     const size = expert.objects.length;
 
@@ -253,10 +257,51 @@ export class ObjectListComponent {
 
     this.generateAllPermutationsForObjects
     this.cookDistance();
-    const vectorForSecondExpert = this.getUpperRightVector(1); // Вектор для експерта 2
-    console.log(vectorForSecondExpert);
+
+    this.updateAllMatrices();
 
   }
+
+  // Оновлення матриці попарних порівнянь
+  updateAllMatrices() {
+    // Генеруємо вектори з мінімальною сумою перед оновленням матриць
+    this.getVectorsWithMinSum();
+
+    // Перебираємо всі вектори в compromiseMatrix і оновлюємо їхні матриці
+    this.compromiseMatrix.forEach((tryVect, index) => {
+      const size = tryVect.objects.length;
+
+      // Сортуємо об'єкти для відображення в матриці за `value`
+      tryVect.sortedObjects = [...tryVect.objects].sort((a, b) => a.value - b.value);
+
+      // Створюємо нову матрицю
+      const newMatrix: number[][] = Array(size).fill(0).map(() => Array(size).fill(0));
+
+      // Оновлюємо матрицю на основі індексів (рейтингу) об'єктів у списку
+      for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+          const objectI = tryVect.sortedObjects[i]; // Об'єкт із `value` для рядка
+          const objectJ = tryVect.sortedObjects[j]; // Об'єкт із `value` для стовпця
+
+          // Визначаємо індекси об'єктів у списку (рейтинги)
+          const indexI = tryVect.objects.findIndex(obj => obj.name === objectI.name);
+          const indexJ = tryVect.objects.findIndex(obj => obj.name === objectJ.name);
+
+          // Попарні порівняння на основі рейтингу (індекса у списку)
+          if (indexI > indexJ) {
+            newMatrix[i][j] = -1; // Об'єкт I має нижчий рейтинг
+          } else if (indexI < indexJ) {
+            newMatrix[i][j] = 1;  // Об'єкт I має вищий рейтинг
+          } else {
+            newMatrix[i][j] = 0;  // Об'єкти рівні
+          }
+        }
+      }
+
+      tryVect.matrix = newMatrix; // Зберігаємо оновлену матрицю
+    });
+  }
+
 
   // Перетягування елемента (початок)
   onDragStart(expertIndex: number, index: number) {
@@ -287,6 +332,7 @@ export class ObjectListComponent {
     this.draggedItemIndex = null;
 
     console.log('Оновлений список об\'єктів:', this.experts[expertIndex].objects);
+
   }
 
 
@@ -436,7 +482,6 @@ export class ObjectListComponent {
       this.cookDistances.push({ exp: expData });
     });
 
-    console.log('Cook Distances:', this.cookDistances);
   }
 
 
@@ -473,12 +518,21 @@ export class ObjectListComponent {
     const summaryTable = this.getSummaryTable(); // Отримуємо підсумкову таблицю
     const minSum = this.getMinTotalSum(); // Знаходимо найменшу ЗагальнуСуму
 
+    // Перевірка на наявність перестановок
+    if (!this.allPossibleObjects || this.allPossibleObjects.length === 0) {
+      console.warn('Перестановки об’єктів відсутні.');
+      return;
+    }
+
     // Фільтруємо перестановки з мінімальною сумою
     const candidates = summaryTable
       .map((row, index) => ({ ...row, index }))
       .filter(row => row.totalSum === minSum);
 
-    if (candidates.length === 0) return []; // Якщо таких перестановок немає
+    if (candidates.length === 0) {
+      console.warn('Жодних відповідних перестановок для мінімальної суми не знайдено.');
+      return;
+    }
 
     // Знаходимо мінімальний "Максимум" серед кандидатів
     const minMax = Math.min(...candidates.map(row => row.maxValue));
@@ -488,9 +542,43 @@ export class ObjectListComponent {
       .filter(row => row.maxValue === minMax)
       .map(row => row.index);
 
-    // Повертаємо вектори об’єктів із цих індексів
-    return selectedIndices.map(index => this.allPossibleObjects[index]?.objects || []);
+    console.log('Обрані індекси перестановок:', selectedIndices);
+
+    // Очищуємо compromiseMatrix
+    this.compromiseMatrix = [];
+
+    // Заповнюємо compromiseMatrix об'єктами
+    selectedIndices.forEach(index => {
+      const objects = this.allPossibleObjects[index]?.objects || [];
+      if (objects.length === 0) {
+        console.warn(`Пропущена порожня перестановка для індексу: ${index}`);
+        return;
+      }
+
+      // Встановлюємо коректні значення `value` на основі `this.objects`
+      const updatedObjects = objects.map(obj => {
+        const original = this.objects.find(o => o.name === obj.name); // Знаходимо оригінальний об'єкт
+        if (!original) {
+          console.warn(`Об'єкт ${obj.name} не знайдено у початковому списку.`);
+          return { ...obj, value: 0 }; // Якщо не знайдено, встановлюємо значення `value` як 0
+        }
+        return { ...obj, value: original.value }; // Встановлюємо значення `value` з початкового списку
+      });
+
+      const sortedObjects = [...updatedObjects].sort((a, b) => a.value - b.value);
+
+      // Додаємо об'єкти в compromiseMatrix
+      this.compromiseMatrix.push({
+        objects: updatedObjects,
+        sortedObjects: [...this.objects].sort((a, b) => a.value - b.value),
+        matrix: [] // Матрицю заповнить функція updateMatrix
+      });
+    });
   }
+
+
+
+
 
   getMinMaxAmongMinSums() {
     const summaryTable = this.getSummaryTable(); // Отримуємо підсумкову таблицю
@@ -530,12 +618,12 @@ export class ObjectListComponent {
     // Отримуємо вектори для двох експертів
     this.hemVec1 = this.getUpperRightVector(expertIndex1);
     this.hemVec2 = this.getUpperRightVector(expertIndex2);
-  
+
     // Перевірка на однакову довжину векторів
     if (this.hemVec1.length !== this.hemVec2.length) {
       throw new Error(`Вектори експертів ${expertIndex1} та ${expertIndex2} мають різну довжину.`);
     }
-  
+
     // Обчислюємо фінальний вектор з урахуванням специфічних умов
     const finalVector = this.hemVec1.map((value1, index) => {
       const value2 = this.hemVec2[index];
@@ -549,14 +637,14 @@ export class ObjectListComponent {
       // За замовчуванням просто складаємо елементи
       return value1 + value2;
     });
-  
+
     // Додаємо в кінець вектора суму всіх елементів
     const sumOfElements = finalVector.reduce((sum, value) => sum + value, 0);
     finalVector.push(sumOfElements);
-  
+
     return finalVector;
   }
-  
+
 
   canComputeHemming(): boolean {
     return this.selectedExpert1 !== null &&

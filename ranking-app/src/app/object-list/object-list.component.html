@@ -132,23 +132,43 @@
           </div>
         </div>
 
-
-
-
       </div>
 
 
-      <div class="bot-container">
+      <div class="bot-container scrollable-table">
         <!-- Вектори з мінімальною сумою -->
         <div class="col min-sum-vectors">
           <h4>Вектори з мінімальною сумою</h4>
-          <div class="scrollable-table">
-            <table>
-              <tr *ngFor="let vector of getVectorsWithMinSum()">
-                <td *ngFor="let obj of vector">{{ obj.name }}</td>
+          <ng-container *ngFor="let compromise of compromiseMatrix">
+            <!-- Таблиця для вектора об'єктів -->
+            <table border="1">
+              <tr style="font-weight: bold; background-color: yellow;">
+                <td *ngFor="let obj of compromise.objects">{{ obj.name }}</td>
               </tr>
             </table>
-          </div>
+            <br>
+
+            <!-- Таблиця для матриці -->
+            <table border="1">
+              <!-- Заголовки (перший рядок) -->
+              <thead>
+                <tr>
+                  <th></th> <!-- Порожня клітинка для вирівнювання -->
+                  <th *ngFor="let obj of compromise.sortedObjects">{{ obj.name }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Рядки матриці -->
+                <tr *ngFor="let row of compromise.matrix; let rowIndex = index">
+                  <!-- Назва об'єкта для кожного рядка -->
+                  <td>{{ compromise.sortedObjects[rowIndex].name }}</td>
+                  <!-- Клітинки матриці -->
+                  <td *ngFor="let cell of row">{{ cell }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <br>
+          </ng-container>
         </div>
       </div>
 
