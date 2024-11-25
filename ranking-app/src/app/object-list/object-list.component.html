@@ -94,6 +94,57 @@
       </div>
     </div>
 
+    <div class="lab4-container">
+      <div *ngFor="let expert of lab4Expert; let i = index" class="lab4-section">
+        <table border="1" style="border-collapse: collapse; text-align: center; margin-bottom: 20px;">
+          <tbody>
+            <!-- Рядок для "Експерти" -->
+            <tr>
+              <th>Експерт</th>
+              <td>{{ i + 1 }}</td>
+
+            </tr>
+            <!-- Рядок для "ВІДСТАНІ" -->
+            <tr>
+              <th>Відстань</th>
+              <td>{{ expert.dist }}</td>
+            </tr>
+            <!-- Рядок для "Співвідн" -->
+            <tr>
+              <th>Співвідн.</th>
+              <td>{{ expert.spiv }}</td>
+
+            </tr>
+            <!-- Рядок для "Норм" -->
+            <tr>
+              <th>Норма</th>
+              <td>{{ expert.norm }}</td>
+
+            </tr>
+            <!-- Рядок для "Норм, %" -->
+            <tr>
+              <th>Норма, %</th>
+              <td>{{ (expert.norm * 100).toFixed(2) }}%</td>
+            </tr>
+            <!-- Рядок для "Ідеал" -->
+            <tr>
+              <th>Ідеал</th>
+              <td>{{ expert.ideal }}</td>
+
+            </tr>
+            <!-- Рядок для "Ідеал, %" -->
+            <tr>
+              <th>Ідеал, %</th>
+              <td>{{ (expert.ideal * 100).toFixed(2) }}%</td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+
     <!-- Права секція -->
     <div class="right-container">
 
@@ -225,9 +276,4 @@
       </div>
     </div>
 
-    <!-- lab4 секція -->
-    <div class="lab4-container">
-
-
-    </div>
   </div>

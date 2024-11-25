@@ -16,6 +16,13 @@ export class ObjectListComponent {
     }[]
   }[] = [];
 
+  lab4Expert: {
+    dist: number,
+    spiv: number,
+    norm: number,
+    ideal: number
+  }[] = [];
+
   selectedExpert1: number | null = null; // Індекс першого обраного експерта
   selectedExpert2: number | null = null; // Індекс другого обраного експерта
   hemVec1: number[] = [];
@@ -34,12 +41,16 @@ export class ObjectListComponent {
   constructor(private stateService: StateService) { }
 
   ngOnInit() {
+    this.objects = [];
+    this.experts = [];
+
     const savedObjects = JSON.parse(localStorage.getItem('objects') || '[]');
     // Завантажуємо об'єкти з StateService
     this.objects = this.stateService.getObjects().map((obj, index) => ({
       ...obj,
       value: index + 1 // Починаємо value з 1
     }));
+    
 
     // Завантажуємо збережені протоколи
     this.protocol = JSON.parse(localStorage.getItem('protocol') || '[]');
@@ -192,6 +203,7 @@ export class ObjectListComponent {
     this.experts.forEach((expert) =>
       this.stateService.setComparisonMatrix(expert.name, expert.matrix)
     );
+    this.updateAllMatrices();
   }
 
   // Оновлення кількості експертів
@@ -214,6 +226,7 @@ export class ObjectListComponent {
     this.experts.forEach((expert) =>
       this.stateService.setComparisonMatrix(expert.name, expert.matrix)
     );
+    this.updateAllMatrices();
   }
 
 
@@ -300,6 +313,8 @@ export class ObjectListComponent {
 
       tryVect.matrix = newMatrix; // Зберігаємо оновлену матрицю
     });
+
+    this.setIdeal();
   }
 
 
@@ -324,7 +339,7 @@ export class ObjectListComponent {
 
       // Оновлюємо матрицю для конкретного експерта
       this.updateMatrix(expertIndex);
-
+      this.updateAllMatrices();
 
     }
 
@@ -347,6 +362,7 @@ export class ObjectListComponent {
     this.generateAllPermutationsForObjects;
     // Перерахунок таблиці відстаней Кука
     this.cookDistance();
+    this.updateAllMatrices();
   }
 
   createInitialMatrix(size: number): number[][] {
@@ -391,7 +407,7 @@ export class ObjectListComponent {
     this.generateAllPermutationsForObjects;
     // Перерахунок таблиці відстаней Кука
     this.cookDistance();
-
+    this.updateAllMatrices();
   }
 
 
@@ -410,7 +426,7 @@ export class ObjectListComponent {
       this.logAction('Спроба видалення останнього експерта заблокована');
     }
     this.stateService.updateExpertsData(this.experts);
-
+    this.updateAllMatrices();
   }
 
 
@@ -665,6 +681,161 @@ export class ObjectListComponent {
     } catch (error) {
       console.error('Помилка під час обчислення відстані Хеммінга:', error);
     }
+  }
+
+  calculateHemmingDistanceBetweenExpertAndCompromise(expertIndex: number): number[] {
+    if (!this.compromiseMatrix || this.compromiseMatrix.length === 0) {
+      throw new Error('compromiseMatrix порожній або не визначений.');
+    }
+ 
+    // Отримуємо вектор з верхньої правої частини матриці експерта
+    const expertVector = this.getUpperRightVectorFromMatrix(this.experts[expertIndex].matrix);
+
+    // Отримуємо вектор з верхньої правої частини матриці compromiseMatrix
+    const compromiseVector = this.getUpperRightVectorFromMatrix(this.compromiseMatrix[0].matrix);
+
+    // Перевірка на однакову довжину векторів
+    if (expertVector.length !== compromiseVector.length) {
+      throw new Error(
+        `Вектори експерта та compromiseMatrix мають різну довжину. (${expertVector.length} !== ${compromiseVector.length})`
+      );
+    }
+
+    const hemmingVector = expertVector.map((value1, index) => {
+      const value2 = compromiseVector[index];
+      if ((value1 === -1 && value2 === 1) || (value1 === 1 && value2 === -1)) {
+        return 2;
+      } else if (value1 === -1 && value2 === -1) {
+        return 0;
+      } else if (value1 === 1 && value2 === 1) {
+        return 0;
+      }
+      // За замовчуванням просто складаємо елементи
+      return value1 + value2;
+    });
+
+    // Додаємо в кінець вектора суму всіх елементів
+    const sumOfElements = hemmingVector.reduce((sum, value) => sum + value, 0);
+    hemmingVector.push(sumOfElements);
+
+    return hemmingVector;
+  }
+
+  getUpperRightVectorFromMatrix(matrix: number[][]): number[] {
+    const vector: number[] = [];
+    for (let i = 0; i < matrix.length; i++) {
+      for (let j = i + 1; j < matrix[i].length; j++) {
+        vector.push(matrix[i][j]);
+      }
+    }
+    return vector;
+  }
+
+  updateLab4ExpertDistances(): void {
+    // Перевірка, чи є compromiseMatrix і експерти
+    if (!this.compromiseMatrix || this.compromiseMatrix.length === 0) {
+      console.error('compromiseMatrix порожній або не визначений.');
+      return;
+    }
+
+    if (!this.experts || this.experts.length === 0) {
+      console.error('Список експертів порожній або не визначений.');
+      return;
+    }
+
+    // Очищуємо lab4Expert перед оновленням
+    this.lab4Expert = [];
+
+    // Обчислення відстані Хеммінга для кожного експерта
+    this.experts.forEach((expert, index) => {
+      const hemmingDistance = this.calculateHemmingDistanceBetweenExpertAndCompromise(index);
+
+      // Додаємо новий об'єкт у lab4Expert
+      this.lab4Expert.push({
+        dist: hemmingDistance[hemmingDistance.length - 1], // Сума значень вектора Хеммінга
+        spiv: 0,
+        norm: 0,
+        ideal: 0,
+      });
+    });
+    console.log('Оновлений lab4Expert з полем norm:', this.lab4Expert);
+
+  }
+
+  setSpiv() {
+    // Оновлюємо відстані Хеммінга перед обчисленнями
+    this.updateLab4ExpertDistances();
+
+    // Перевіряємо, чи `lab4Expert` не порожній
+    if (!this.lab4Expert || this.lab4Expert.length === 0) {
+      console.error('lab4Expert порожній або не визначений.');
+      return;
+    }
+
+    // Знаходимо максимальне значення dist серед усіх об'єктів lab4Expert
+    const maxDist = Math.max(...this.lab4Expert.map(obj => obj.dist));
+
+    if (maxDist === 0) {
+      console.warn('Максимальна відстань дорівнює 0. Ділення неможливе.');
+      return;
+    }
+
+    // Оновлюємо поле spiv для кожного об'єкта lab4Expert
+    this.lab4Expert = this.lab4Expert.map(obj => ({
+      ...obj,
+      spiv: +(maxDist / obj.dist).toFixed(2),  // Ділимо максимальне значення на dist
+    }));
+  }
+
+  setNorm() {
+    this.setSpiv();
+
+    // Перевіряємо, чи `lab4Expert` не порожній
+    if (!this.lab4Expert || this.lab4Expert.length === 0) {
+      console.error('lab4Expert порожній або не визначений.');
+      return;
+    }
+
+    // Знаходимо суму всіх значень spiv
+    const totalSpiv = this.lab4Expert.reduce((sum, obj) => sum + obj.spiv, 0);
+
+    if (totalSpiv === 0) {
+      console.warn('Сума значень spiv дорівнює 0. Нормалізація неможлива.');
+      return;
+    }
+
+    // Оновлюємо поле norm для кожного об'єкта lab4Expert
+    this.lab4Expert = this.lab4Expert.map(obj => ({
+      ...obj,
+      norm: +(obj.spiv / totalSpiv).toFixed(2), // Нормалізація та округлення до двох знаків
+    }));
+  }
+
+  setIdeal() {
+    this.setNorm();
+
+    // Перевіряємо, чи `lab4Expert` не порожній
+    if (!this.lab4Expert || this.lab4Expert.length === 0) {
+      console.error('lab4Expert порожній або не визначений.');
+      return;
+    }
+
+    // Знаходимо максимальне значення norm серед усіх об'єктів lab4Expert
+    const maxNorm = Math.max(...this.lab4Expert.map(obj => obj.norm));
+    
+    if (maxNorm === 0) {
+      console.warn('Сума значень norm дорівнює 0.');
+      return;
+    }
+    
+    const coef = 1 / maxNorm;
+
+    // Оновлюємо поле ideal для кожного об'єкта lab4Expert
+    this.lab4Expert = this.lab4Expert.map(obj => ({
+      ...obj,
+      ideal: +(obj.norm * coef).toFixed(2), // Нормалізація та округлення до двох знаків
+    }));
+
   }
 
 

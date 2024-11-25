@@ -404,3 +404,12 @@ table th {
   font-weight: bold;
 }
 
+.lab4-section {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
